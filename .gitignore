@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.venv/
+.playwright-cli/
+.impeccable/review/
+.impeccable/mocks/
+*.db
+*.db-wal
+*.db-shm
+app.pem

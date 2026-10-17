@@ -1,0 +1,69 @@
+{% extends "shell.html" %}
+{% from "components.html" import icon, status, event_kind, repo_link, github_link, version_chip, verdict_chip, timestamp %}
+{% set active_page = "repos" %}
+{% set page_icon = "folder-git-2" %}
+{% block title %}ForkIQ · 仓库{% endblock %}
+{% block page_title %}{{ repo.full_name }}{% endblock %}
+{% block header_actions %}{{ status(repo.status) }}{% endblock %}
+{% block content %}
+    <a class="back-link" href="/repos">{{ icon("chevron-right") }}返回仓库列表</a>
+    <section class="card">
+      <dl class="kv">
+        <dt>仓库</dt><dd>{{ repo_link(repo.full_name) }}</dd>
+        <dt>上游</dt><dd>{{ repo_link(repo.upstream_full_name) }}{% if repo.upstream_gone %}<span class="tag tag-warn">上游已删除</span>{% endif %}</dd>
+        <dt>同步分支</dt><dd>{{ repo.branch }}</dd>
+        <dt>同步方式</dt>
+        <dd>{% if repo.mode == 'manual' %}手工 fork：保留 fork 自有提交，上游更新自动合并；fork 自己的 Actions 可独立更新内容，不依赖上游是否开启 Actions
+            {% else %}镜像：严格跟随上游，分支始终停在与上游相同的提交；fork 不留自有提交，上游改写历史时直接对齐{% endif %}</dd>
+        <dt>自更新保活</dt>
+        <dd>{% if repo.self_update_interval %}{{ repo.self_update or '已开启，等待检查' }}
+            {% else %}未开启{% endif %}</dd>
+        <dt>版本对比</dt><dd>{{ verdict_chip(verdict) }}</dd>
+        <dt>上游版本</dt><dd>{{ version_chip(repo.upstream_sha, repo.upstream_tag, repo.upstream_commit_at, side='上游') }}</dd>
+        <dt>fork 版本</dt><dd>{{ version_chip(repo.fork_sha, repo.fork_tag, repo.fork_commit_at, side='本地', tone=fork_tone) }}</dd>
+        <dt>最近成功</dt><dd>{{ timestamp(repo.last_success_at) }}</dd>
+        <dt>最近检查</dt><dd>{{ timestamp(repo.last_check_at) }}</dd>
+        {% if repo.last_error %}<dt>最近错误</dt><dd id="repo-error" class="err-hint">{{ repo.last_error }}</dd>{% endif %}
+        {% if repo.diverged_at %}<dt>分叉于</dt><dd>{{ timestamp(repo.diverged_at) }}（上游 {{ repo.diverged_upstream_sha[:12] if repo.diverged_upstream_sha }}）</dd>{% endif %}
+      </dl>
+      <div class="actions">
+        <form method="post" action="/repos/{{ repo.id }}/sync"><input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="primary">立即同步</button></form>
+        <form method="post" action="/repos/{{ repo.id }}/mode">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="secondary">{{ '切换为镜像模式' if repo.mode == 'manual' else '切换为手工 fork' }}</button>
+        </form>
+        <form method="post" action="/repos/{{ repo.id }}/selfupdate">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="secondary">{{ '关闭自更新' if repo.self_update_interval else '开启自更新保活' }}</button>
+        </form>
+        {% if repo.enabled and repo.status != 'paused' %}
+        <form method="post" action="/repos/{{ repo.id }}/pause"><input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="secondary">暂停</button></form>
+        {% else %}
+        <form method="post" action="/repos/{{ repo.id }}/resume"><input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="secondary">恢复</button></form>
+        {% endif %}
+        <form method="post" action="/repos/{{ repo.id }}/actions">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <input type="hidden" name="enabled" value="{{ '1' if repo.actions_disabled else '0' }}">
+          <button class="secondary">{{ '启用 Actions' if repo.actions_disabled else '禁用 Actions' }}</button>
+        </form>
+        <form method="post" action="/repos/{{ repo.id }}/remove" class="confirm"
+              data-confirm="仅从管理列表移除，不会改动 GitHub 上的仓库。确认移除？">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="danger">移除管理</button></form>
+      </div>
+    </section>
+    <section class="card">
+      <h2>事件历史</h2>
+      {% if events %}
+      <div class="table-wrap" role="region" aria-label="事件记录" tabindex="0"><table class="events" data-columns="3">
+        <tr><th>时间</th><th>类型</th><th>说明</th></tr>
+        {% for e in events %}
+        <tr><td class="muted">{{ timestamp(e.at) }}</td><td>{{ event_kind(e.kind) }}</td><td>{{ e.message }}</td></tr>
+        {% endfor %}
+      </table></div>
+      {% else %}<p class="muted">暂无事件。</p>{% endif %}
+    </section>
+{% endblock %}

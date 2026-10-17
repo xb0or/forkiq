@@ -1,0 +1,26 @@
+{% from "components.html" import status, status_label, github_link, repo_link, version_chip, verdict_chip, timestamp %}
+<div data-revision="{{ revision }}">
+{% if repos %}
+<div class="table-wrap" role="region" aria-label="仓库列表" tabindex="0"><table class="repos">
+  <tr><th>仓库</th><th>上游</th><th>版本对比</th><th>状态</th><th>最近检查</th></tr>
+  {% for r in repos %}
+  <tr>
+    {#- 本地与上游共用一个两行网格（名称 / 版本），两侧的版本行因此永远同层。
+        子项按列优先填充，顺序（本地名称 / 本地版本 / 上游名称 / 上游版本）
+        就是网格的契约，不要插入额外子项。 -#}
+    <td colspan="2"><div class="repo-pair">
+      <div class="pair-name pair-local"><span class="sr-only">fork 仓库：</span><a href="/repos/{{ r.id }}">{{ r.full_name }}</a>{{ github_link(r.full_name, '在 GitHub 打开 fork') }}{% if r.upstream_gone %}<span class="tag tag-warn">上游已删除</span>{% endif %}</div>
+      <div class="version-line pair-local">{{ version_chip(r.fork_sha, r.fork_tag, r.fork_commit_at, side='本地', tone=r.fork_tone) }}</div>
+      <div class="pair-name pair-upstream muted"><span class="sr-only">上游仓库：</span>{{ repo_link(r.upstream_full_name) }}</div>
+      <div class="version-line pair-upstream">{{ version_chip(r.upstream_sha, r.upstream_tag, r.upstream_commit_at, side='上游') }}</div>
+    </div></td>
+    <td data-label="版本对比">{{ verdict_chip(r.verdict) }}</td>
+    <td data-label="状态">{{ status(r.status) }}
+        {% if r.last_error %}<a class="error-details" href="/repos/{{ r.id }}#repo-error" data-error-repo="{{ r.full_name }}" data-error-status="{{ status_label(r.status) }}" data-error-message="{{ r.last_error }}">查看详情</a>{% endif %}</td>
+    <td class="muted" data-label="最近检查">{{ timestamp(r.last_check_at) }}</td>
+  </tr>
+  {% endfor %}
+</table></div>
+{% elif filter %}<p class="muted">没有符合筛选条件的仓库。<a href="/repos">查看全部仓库</a></p>
+{% else %}<p class="muted">还没有受管仓库。粘贴一个 fork 链接，或在设置里开启自动发现。</p>{% endif %}
+</div>

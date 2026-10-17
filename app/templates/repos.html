@@ -1,0 +1,40 @@
+{% extends "shell.html" %}
+{% from "components.html" import icon %}
+{% set active_page = "repos" %}
+{% set page_icon = "folder-git-2" %}
+{% set auto_refresh = 30 %}
+{% set refresh_region = "repo-table-region" %}
+{% block title %}ForkIQ · 仓库{% endblock %}
+{% block page_title %}仓库管理{% endblock %}
+{% block header_actions %}{% endblock %}
+{% block content %}
+    <div class="page-intro"><p class="muted">集中查看 fork 状态，管理上游同步。</p></div>
+    <div class="filters">
+        <a class="chip-link {% if not filter %}active{% endif %}" href="/repos">全部</a>
+        <a class="chip-link {% if filter == 'synced' %}active{% endif %}" href="/repos?filter=synced">已同步</a>
+        <a class="chip-link {% if filter == 'waiting' %}active{% endif %}" href="/repos?filter=waiting">待同步</a>
+        <a class="chip-link {% if filter == 'attention' %}active{% endif %}" href="/repos?filter=attention">需关注</a>
+        <a class="chip-link {% if filter == 'diverged' %}active{% endif %}" href="/repos?filter=diverged">分叉</a>
+        <a class="chip-link {% if filter == 'blocked' %}active{% endif %}" href="/repos?filter=blocked">阻塞</a>
+        <a class="chip-link {% if filter == 'paused' %}active{% endif %}" href="/repos?filter=paused">暂停</a>
+      </div>
+    <section class="card">
+      <h2>添加 fork</h2>
+      {% if add_error %}<div class="error">{{ add_error }}</div>{% endif %}
+      <form method="post" action="/repos/add" class="inline">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <label class="sr-only" for="fork-url">GitHub fork 仓库链接</label>
+        <input id="fork-url" type="url" name="url" placeholder="https://github.com/owner/repository" required>
+        <button class="primary">加入自动同步</button>
+      </form>
+    </section>
+    <section class="card">
+      <div id="repo-table-region" data-refresh-url="/partials/repos?filter={{ filter|urlencode }}">{% include "partials/repo_table.html" %}</div>
+    </section>
+    <dialog id="error-dialog" aria-labelledby="error-dialog-title" aria-describedby="error-dialog-repo error-dialog-message">
+      <button type="button" class="secondary" data-error-close autofocus>关闭</button>
+      <h2 id="error-dialog-title">状态详情</h2>
+      <p id="error-dialog-repo"></p>
+      <div id="error-dialog-message" tabindex="0"></div>
+    </dialog>
+{% endblock %}

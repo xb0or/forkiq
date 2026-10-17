@@ -1,0 +1,37 @@
+{% macro icon(name, class_name='') -%}
+<svg class="icon {{ class_name }}" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="/static/icons.svg#{{ name }}"></use></svg>
+{%- endmacro %}
+
+{% macro status_label(value) -%}
+{% set labels = {'synced': '已同步', 'behind': '待同步', 'pending': '等待检查', 'diverged': '存在分叉', 'blocked': '同步阻塞', 'error': '检查失败', 'needs_attention': '需要处理', 'paused': '已暂停', 'missing': '仓库缺失'} -%}
+{{ labels.get(value, value) }}
+{%- endmacro %}
+
+{% macro timestamp(value) -%}
+{% if value %}<time class="ts" datetime="{{ value }}" title="{{ value }}">{{ value | short_time }}</time>{% else %}—{% endif %}
+{%- endmacro %}
+
+{% macro status(value) -%}
+<span class="badge s-{{ value }}" title="{{ value }}">{{ status_label(value) }}</span>
+{%- endmacro %}
+
+{% macro event_kind(value) -%}
+{% set labels = {'synced': '同步完成', 'discover': '发现仓库', 'blocked': '同步阻塞', 'error': '错误', 'auth': '认证', 'check': '检查', 'merge': '合并', 'selfupdate': '自更新'} %}
+<span class="badge kind-{{ value }}" title="{{ value }}">{{ labels.get(value, value) }}</span>
+{%- endmacro %}
+
+{% macro repo_link(full_name) -%}
+{% if full_name %}<a href="https://github.com/{{ full_name }}" target="_blank" rel="noopener">{{ full_name }}</a>{% else %}—{% endif %}
+{%- endmacro %}
+
+{% macro github_link(full_name, label='在 GitHub 打开') -%}
+{% if full_name %}<a class="ext-link" href="https://github.com/{{ full_name }}" target="_blank" rel="noopener" aria-label="{{ label }} {{ full_name }}" title="{{ label }}">{{ icon('arrow-right') }}</a>{% endif %}
+{%- endmacro %}
+
+{% macro version_chip(sha, tag, commit_at, side='', tone='', label='提交') -%}
+<span class="version-chip"{% if sha %} title="{{ label }} {{ sha }}"{% endif %}>{% if side %}<span class="version-side">{{ side }}</span>{% endif %}<span class="tag tag-version{% if not tag %} tag-missing{% endif %}"{% if not tag %} title="{{ side or '该提交' }}没有可达的版本标签"{% endif %}>{{ tag or '—' }}</span><span class="mono sha {{ tone }}">{{ sha[:12] if sha else '—' }}</span>{% if commit_at %}<span class="version-date muted">{{ commit_at[:10] }}</span>{% endif %}</span>
+{%- endmacro %}
+
+{% macro verdict_chip(verdict) -%}
+<span class="verdict v-{{ verdict.kind }}" title="{{ verdict.title }}"><span class="verdict-text">{{ verdict.text }}</span>{% if verdict.sha %}<span class="mono verdict-sha">{{ verdict.sha[:12] }}</span>{% endif %}</span>
+{%- endmacro %}

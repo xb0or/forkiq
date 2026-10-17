@@ -1,0 +1,22 @@
+{% extends "auth.html" %}
+{% block title %}ForkIQ · 连接 GitHub{% endblock %}
+{% block auth_title %}连接 GitHub App{% endblock %}
+{% block auth_description %}<p class="auth-description">通过专用 App 授权，无需提供 GitHub 账号密码。</p>{% endblock %}
+{% block auth_content %}
+{% if app_slug %}
+  <div class="notice"><strong>已连接：{{ app_slug }}</strong>{% if installation_id %}<br>installation {{ installation_id }}{% endif %}</div>
+  <a class="primary link auth-submit" href="/">进入面板{{ icon('arrow-right') }}</a>
+{% else %}
+  <ol class="connect-steps">
+    <li>在 GitHub 创建专用 App，权限已预填。</li>
+    <li>安装到你的账号，选择 All repositories。</li>
+    <li>返回面板，检测安装并开始同步。</li>
+  </ol>
+  <form method="post" action="{{ manifest_url }}?state={{ state }}" id="manifest-form">
+    <input type="hidden" name="manifest" value='{{ manifest }}'>
+    <button class="primary auth-submit" type="submit">在 GitHub 上创建 App{{ icon('arrow-right') }}</button>
+  </form>
+  <p class="auth-footnote">创建后 GitHub 会自动跳回面板。授权包含 Contents、Workflows、Actions、Administration 与 Metadata。</p>
+{% endif %}
+<a class="auth-back" href="/">返回概览</a>
+{% endblock %}

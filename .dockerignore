@@ -1,0 +1,14 @@
+.git
+.gitignore
+.venv
+**/__pycache__
+**/*.pyc
+tests
+deploy
+.impeccable
+/DESIGN.html
+/PRODUCT.html
+/README.html
+/DESIGN.md
+/PRODUCT.md
+/README.md

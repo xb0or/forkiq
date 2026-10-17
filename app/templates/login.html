@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "components.html" import icon %}
+{% block title %}ForkIQ · 登录{% endblock %}
+{% block bodyclass %}auth-page{% endblock %}
+{% block body %}
+<main class="auth-layout" id="main-content" tabindex="-1">
+  <div class="auth-card card">
+    <div class="auth-brand">{{ icon('git-fork') }}<span>ForkIQ</span></div>
+    <h1>登录管理面板</h1>
+    <p class="auth-description">查看仓库状态，跟进上游更新。</p>
+    <form method="post" action="/login" class="stacked-form">
+      {% if error %}<div class="error" role="alert">{{ error }}</div>{% endif %}
+      <label for="password">管理员密码</label>
+      <input id="password" type="password" name="password" autocomplete="current-password" placeholder="请输入管理员密码" required autofocus>
+      <button class="primary auth-submit" type="submit">登录{{ icon('arrow-right') }}</button>
+    </form>
+    <p class="auth-footnote">{{ icon('shield-check') }}使用现有管理员密码安全登录</p>
+  </div>
+  <p class="auth-caption">ForkIQ · GitHub fork 同步管理</p>
+</main>
+{% endblock %}
